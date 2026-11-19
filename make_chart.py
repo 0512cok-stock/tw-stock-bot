@@ -38,6 +38,10 @@ def main():
     if not data:
         raise SystemExit("找不到資料")
 
+    if data["date"] != today.strftime("%Y%m%d"):
+        print("今天沒有新資料(休市或尚未公布),不發文")
+        raise SystemExit(0)
+
     rows = {r[0]: num(r) for r in data["data"]}
     foreign = rows["外資及陸資(不含外資自營商)"] + rows["外資自營商"]
     trust = rows["投信"]
