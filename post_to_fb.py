@@ -1,6 +1,10 @@
 import os
 import requests
 
+if not os.path.exists("chart.png"):
+    print("沒有圖片,今天不發文")
+    raise SystemExit(0)
+
 PAGE_ID = os.environ["FB_PAGE_ID"]
 TOKEN = os.environ["FB_PAGE_TOKEN"]
 
