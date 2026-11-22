@@ -2,6 +2,11 @@ name: Run
 
 on:
   workflow_dispatch:
+    inputs:
+      use_latest:
+        description: "手動測試:沒有今天資料時,改用最近一個交易日(排行圖)"
+        type: boolean
+        default: false
   schedule:
     - cron: "0 9 * * 1-5"
 
@@ -16,7 +21,14 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y fonts-noto-cjk
       - run: pip install requests matplotlib
       - run: python make_chart.py
-      - run: python post_to_fb.py
+      - run: python post_to_fb.py chart
+        env:
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+      - run: python make_stock_rank.py
+        env:
+          USE_LATEST: ${{ inputs.use_latest }}
+      - run: python post_to_fb.py rank
         env:
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
