@@ -78,6 +78,19 @@ def main():
              ha="center", fontsize=10, color="#666")
     fig.tight_layout(rect=(0, 0.03, 1, 1))
     fig.savefig("chart.png")
+    def word(v):
+        return "買超" if v >= 0 else "賣超"
+
+    caption = (
+        f"{date_text} 三大法人買賣超(上市)\n"
+        f"外資{word(foreign)} {abs(foreign):.1f} 億、"
+        f"投信{word(trust)} {abs(trust):.1f} 億、"
+        f"自營商{word(dealer)} {abs(dealer):.1f} 億,"
+        f"三大法人合計{word(total)} {abs(total):.1f} 億。\n\n"
+        "資料來源:臺灣證券交易所\n僅供參考,不構成投資建議。"
+    )
+    with open("caption_chart.txt", "w", encoding="utf-8") as f:
+        f.write(caption)
     print("完成:chart.png")
 
 
