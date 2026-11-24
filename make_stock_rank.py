@@ -99,6 +99,16 @@ def main():
              ha="center", fontsize=11, color="#666")
     fig.tight_layout(rect=(0, 0.03, 1, 0.95), h_pad=3, w_pad=3)
     fig.savefig("rank.png")
+        caption = (
+        f"{date_text} 外資、投信買賣超排行(上市,單位:張)\n"
+        f"外資買超第一名:{foreign[0][0]}({foreign[0][1]:+,.0f} 張)\n"
+        f"外資賣超第一名:{foreign[-1][0]}({foreign[-1][1]:+,.0f} 張)\n"
+        f"投信買超第一名:{trust[0][0]}({trust[0][1]:+,.0f} 張)\n"
+        f"投信賣超第一名:{trust[-1][0]}({trust[-1][1]:+,.0f} 張)\n\n"
+        "資料來源:臺灣證券交易所\n僅供參考,不構成投資建議。"
+    )
+    with open("caption_rank.txt", "w", encoding="utf-8") as f:
+        f.write(caption)
     print("完成:rank.png")
 
 
