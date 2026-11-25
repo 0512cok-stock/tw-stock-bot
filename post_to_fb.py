@@ -18,6 +18,11 @@ JOBS = {
         "caption_rev.txt",
         "0050成分股月營收年增率排行\n資料來源:公開資訊觀測站\n僅供參考,不構成投資建議。",
     ),
+    "etf": (
+        "etf.png",
+        "caption_etf.txt",
+        "主動式ETF持股異動\n資料來源:投信官網每日持股公告\n僅供參考,不構成投資建議。",
+    ),
 }
 
 job = sys.argv[1] if len(sys.argv) > 1 else "chart"
