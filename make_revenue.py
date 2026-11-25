@@ -43,7 +43,7 @@ def parse(rows, ym):
         rev = to_float(r.get("營業收入-當月營收"))
         yoy = to_float(r.get("營業收入-去年同月增減(%)"))
         if code and rev is not None and yoy is not None:
-            out[code] = (name, rev, yoy)
+            out[code] = (name, rev, yoy, str(r.get("產業別", "")).strip())
     if rows and not out:
         print(f"沒有符合 {ym} 的資料,第一筆內容:", list(rows[0].items())[:6])
     return out
@@ -105,8 +105,11 @@ def main():
         print("營收資料尚未公布完整,不發文")
         raise SystemExit(0)
 
+    auto = {c for c in found if "金融" in data[c][3]}
+    skip = auto | FINANCIAL
+    print(f"依產業別自動辨識出金融股 {len(auto)} 家,實際排除 {len(skip & set(found))} 家") 
     items = sorted(
-        ((f"{c} {data[c][0]}", data[c][1], data[c][2]) for c in found if c not in FINANCIAL),
+        ((f"{c} {data[c][0]}", data[c][1], data[c][2]) for c in found if c not in skip),
         key=lambda x: x[2],
         reverse=True,
     )
