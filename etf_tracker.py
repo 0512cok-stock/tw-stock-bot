@@ -108,25 +108,31 @@ def parse_excel(content):
 
 
 def parse_prices(page_html):
-    """網頁內嵌的資料含每檔股票的股數與金額,相除就是當天收盤價"""
-    m = re.search(r'id="DataAsset"\s+data-content="(.*?)"', page_html, re.S)
-    if not m:
-        return {}
-    try:
-        items = json.loads(htmllib.unescape(m.group(1)))
-    except ValueError:
-        return {}
+    """
+    網頁內嵌的資料含每檔股票的股數與金額,相除就是當天收盤價。
+    直接用文字比對抓出每一筆,不依賴 HTML 或 JSON 的外層結構,格式小改版也能讀。
+    """
+    text = htmllib.unescape(page_html)
     out = {}
-    for it in items:
-        if it.get("AssetCode") != "ST":
-            continue
-        code = str(it.get("DetailCode", "")).strip()
+    pattern = (r'"DetailCode"\s*:\s*"([^"]+)"[^{}]*?"Share"\s*:\s*"?(-?[0-9.]+)"?'
+               r'[^{}]*?"Amount"\s*:\s*"?(-?[0-9.]+)"?')
+    for m in re.finditer(pattern, text):
+        code = m.group(1).strip()
         try:
-            share, amt = float(it.get("Share")), float(it.get("Amount"))
-        except (TypeError, ValueError):
+            share, amt = float(m.group(2)), float(m.group(3))
+        except ValueError:
             continue
-        if code and share > 0 and amt > 0:
+        if code and share > 0 and amt > 0 and code not in out:
             out[code] = amt / share
+    if len(out) < 10:
+        i = text.find("DetailCode")
+        print(f"[診斷] 網頁長度 {len(page_html)},DetailCode 出現 {page_html.count('DetailCode')}/{text.count('DetailCode')} 次,解析到 {len(out)} 檔")
+        if i >= 0:
+            print("[診斷] 範例:", text[max(0, i - 100): i + 300].replace("\n", " "))
+        else:
+            for kw in ("DataAsset", "Share", "Amount", "NavRate"):
+                j = text.find(kw)
+                print(f"[診斷] 『{kw}』", "找不到" if j < 0 else text[max(0, j - 60): j + 160].replace("\n", " "))
     return out
 
 
