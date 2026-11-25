@@ -1,0 +1,52 @@
+name: ETF Tracker
+
+on:
+  workflow_dispatch:
+    inputs:
+      demo:
+        description: "示範模式:用模擬的前一日資料產圖,不發文、不存檔"
+        type: boolean
+        default: false
+  schedule:
+    - cron: "30 10 * * 1-5"
+    - cron: "30 13 * * 1-5"
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y fonts-noto-cjk
+      - run: pip install requests matplotlib pandas openpyxl
+      - run: python etf_tracker.py
+        env:
+          DEMO: ${{ inputs.demo }}
+      - run: python post_to_fb.py etf
+        if: ${{ inputs.demo != true }}
+        env:
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        if: ${{ inputs.demo == true }}
+        with:
+          name: etf-demo
+          path: etf.png
+      - name: Save snapshot
+        if: ${{ inputs.demo != true }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "沒有新的快照要存"
+          else
+            git commit -m "etf snapshot"
+            git pull --rebase
+            git push
+          fi
