@@ -12,6 +12,8 @@ TWSE_URL = "https://openapi.twse.com.tw/v1/opendata/t187ap05_L"
 TPEX_URL = "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap05_O"
 HEADERS = {"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
 MIN_FOUND = 45  # 50 家裡至少要找到幾家才發文
+FINANCIAL = {"2881", "2891", "2882", "2887", "2885", "2884",
+             "2886", "2890", "2883", "2892", "2880", "5880"}
 
 
 def fetch(url):
@@ -104,7 +106,7 @@ def main():
         raise SystemExit(0)
 
     items = sorted(
-        ((f"{c} {data[c][0]}", data[c][1], data[c][2]) for c in found),
+        ((f"{c} {data[c][0]}", data[c][1], data[c][2]) for c in found if c not in FINANCIAL),
         key=lambda x: x[2],
         reverse=True,
     )
@@ -117,7 +119,7 @@ def main():
     fig, axes = plt.subplots(1, 2, figsize=(16, 13), dpi=110)
     panel(axes[0], left, f"年增率較高(第 1~{half} 名)")
     panel(axes[1], right, f"年增率較低(第 {half + 1}~{len(items)} 名)")
-    fig.suptitle(f"{y}年{m}月 0050成分股月營收年增率(共 {len(items)} 家)", fontsize=22)
+    fig.suptitle(f"{y}年{m}月 0050成分股月營收年增率(不含金融股,共 {len(items)} 家)", fontsize=22)
     fig.text(0.5, 0.01, "資料來源:公開資訊觀測站(證交所、櫃買中心開放資料) · 僅供參考,不構成投資建議",
              ha="center", fontsize=11, color="#666")
     fig.tight_layout(rect=(0, 0.03, 1, 0.95), w_pad=3)
@@ -125,7 +127,7 @@ def main():
 
     best, worst = items[0], items[-1]
     lines = [
-        f"{y}年{m}月 0050成分股月營收年增率排行({len(items)} 家)",
+        f"{y}年{m}月 0050成分股月營收年增率排行(不含金融股,{len(items)} 家)",
         f"年增率最高:{best[0]}({best[2]:+,.1f}%)",
         f"年增率最低:{worst[0]}({worst[2]:+,.1f}%)",
     ]
